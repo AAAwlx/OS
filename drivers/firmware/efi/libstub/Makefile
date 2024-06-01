@@ -1,0 +1,10 @@
+obj-y	+= efi-stub-entry.o
+obj-y	+= efi-stub-helper.o
+obj-y	+= efi-stub.o
+obj-y	+= loongarch-stub.o
+obj-y	+= loongarch.o
+obj-y	+= mem.o
+obj-y	+= printk.o
+obj-y	+= screen_info.o
+obj-y	+= systable.o
+obj-y	+= vsprintf.o
