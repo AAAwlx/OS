@@ -1,8 +1,9 @@
+
 VERSION = 0
 PATCHLEVEL = 0
 SUBLEVEL = 1
 EXTRAVERSION = .1
-NAME = OS
+NAME = AOS
 
 #不要再屏幕上打印"Entering directory.." 
 MAKEFLAGS += -rR --no-print-directory
@@ -29,12 +30,11 @@ endif
 ifeq ("$(origin C)", "command line")
   KBUILD_CHECKSRC = $(C)
 endif
-ifndef KBUILD_CHECKSRC #如果没有定义 KBUILD_CHECKSRC 则保证有默认值0
+ifndef KBUILD_CHECKSRC
   KBUILD_CHECKSRC = 0
 endif
 
-# 使用 make M=dir 指定外部模块的构建目录
-# Old syntax make ... SUBDIRS=$PWD is still supported
+# 如果没有指定编译目标，那么默认就是_all
 PHONY := _all
 _all:
 
@@ -76,13 +76,16 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 # 注意：某些体系结构在它们的arch/*/Makefile文件中指定了CROSS_COMPILE。
 export KBUILD_BUILDHOST := $(SUBARCH)
 ARCH		?= $(SUBARCH)
-CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+CROSS_COMPILE	?=
 
 # 写入到compile.h
 # #define UTS_MACHINE "mips64"
 UTS_MACHINE 	:= $(ARCH)
 SRCARCH 	:= $(ARCH)
 
+ifeq ($(ARCH),i386)
+        SRCARCH := x86
+endif
 ifeq ($(ARCH),x86_64)
         SRCARCH := x86
 endif
@@ -209,7 +212,7 @@ USERINCLUDE    := \
 		-I$(srctree)/include/uapi \
 		-Iinclude/generated/uapi \
 		-Iadapter/klibc/include/klibc/uapi \
-        -include $(srctree)/include/linux/kconfig.h        
+        -include $(srctree)/include/AOS/kconfig.h        
 
 KLIBCINCLUDE	:=	\
 		-include include/generated/autoconf.h \
@@ -349,7 +352,7 @@ scripts: scripts_basic include/config/auto.conf include/config/tristate.conf
 init-y		:= init/
 drivers-y	:= drivers/
 libs-y		:= lib/
-# core-y		:= kernel/
+core-y		:= kernel/
 
 # 构建目标需要引用配置文件
 ifeq ($(dot-config),1)
@@ -367,6 +370,7 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
 # if auto.conf.cmd is missing then we are probably in a cleaned tree so
 # we execute the config step to be sure to catch updated Kconfig files
 include/config/%.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
+	$(Q)$(MAKE) -f $(srctree)/Makefile defconfig
 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
 
 else
@@ -376,6 +380,7 @@ endif # $(dot-config)
 
 # 默认的构建目标，在体系特定的Makefile中，一般还会添加其他目标到all中
 all: vmlinux
+	mv arch/x86/boot/Image kernel.bin
 
 #CONFIG_CC_OPTIMIZE_FOR_SIZE在auto.conf中被添加进来了
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
@@ -499,7 +504,7 @@ export mod_strip_cmd
 
 # 要编译的核心目录文件
 # core-y		+= mm/ fs/
-
+#core-y		+= mm/ fs/
 # vmlinux需要编译的目录
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
 		     $(core-y) $(core-m) $(blk-y) $(blk-m) \
@@ -1270,3 +1275,4 @@ FORCE:
 # Declare the contents of the .PHONY variable as phony.  We keep that
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
+

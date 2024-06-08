@@ -6,8 +6,9 @@ TOOLCHAINS=../cross-tools/bin/loongarch64-unknown-linux-gnu-
 
 function distclean()
 {
-
+	make -f Makefile_back ARCH=$ARCH distclean
 }
+
 
 function defconfig()
 {

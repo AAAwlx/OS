@@ -5,8 +5,8 @@
  */
 #define COMPILE_OFFSETS
 
-#include <linux/compiler.h>
-#include <linux/kbuild.h>
+#include <AOS/compiler.h>
+#include <AOS/kbuild.h>
 
 #define __NO_STUBS 1
 #undef __SYSCALL

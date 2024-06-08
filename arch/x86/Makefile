@@ -111,14 +111,10 @@ KBUILD_AFLAGS += $(mflags-y)
 # Kernel objects
 
 head-y := arch/x86/kernel/head_$(BITS).o
-head-y += arch/x86/kernel/head$(BITS).o
-head-y += arch/x86/kernel/head.o
-head-y += arch/x86/kernel/init_task.o
-
-libs-y  += arch/x86/lib/
 
 # See arch/x86/Kbuild for content of core part of the kernel
-core-y += arch/x86/
+core-y += arch/x86/kernel/
+core-y += arch/x86/lib/
 
 # drivers-y are linked after core-y
 #drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/

@@ -6,8 +6,8 @@
 
 #define __GENERATING_BOUNDS_H
 /* Include headers that define the enum constants of interest */
-#include <linux/types.h>
-#include <linux/kbuild.h>
+#include <AOS/types.h>
+#include <AOS/kbuild.h>
 
 void __main(void);
 

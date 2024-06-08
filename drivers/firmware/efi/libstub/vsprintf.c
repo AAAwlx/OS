@@ -1,7 +1,7 @@
-#include <linux/kernel.h>
-#include <linux/stdarg.h>
-#include <linux/string.h>
-#include <linux/ctype.h>
+#include <AOS/kernel.h>
+#include <AOS/stdarg.h>
+#include <AOS/string.h>
+#include <AOS/ctype.h>
 
 #include "efistub.h"
 

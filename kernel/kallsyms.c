@@ -1,10 +1,9 @@
 
-#include <linux/kallsyms.h>
-// #include <dim-sum/fs.h>
-#include <linux/sched.h>
-#include <linux/string.h>
+#include <AOS/kallsyms.h>
+#include <AOS/string.h>
 #include <asm/sections.h>
-
+#include <AOS/stdio.h>
+#include <AOS/debug.h>
 #ifdef CONFIG_KALLSYMS_ALL
 #define all_var 1
 #else
@@ -170,9 +169,6 @@ static unsigned long get_symbol_pos(unsigned long addr,
 	unsigned long symbol_start = 0, symbol_end = 0;
 	unsigned long i, low, high, mid;
 
-	/* This kernel should never had been booted. */
-	BUG_ON(!kallsyms_addresses);
-
 	/* Do a binary search on the sorted kallsyms_addresses array. */
 	low = 0;
 	high = kallsyms_num_syms;
@@ -312,7 +308,7 @@ static int __sprint_symbol(char *buffer, unsigned long address,
 	address += symbol_offset;
 	name = kallsyms_lookup(address, &size, &offset, &modname, buffer);
 	if (!name)
-		return sprintf(buffer, "0x%lx", address);
+		return printk(buffer, "0x%lx", address);
 
 	if (name != buffer)
 		strcpy(buffer, name);
@@ -320,10 +316,10 @@ static int __sprint_symbol(char *buffer, unsigned long address,
 	offset -= symbol_offset;
 
 	if (add_offset)
-		len += sprintf(buffer + len, "+%#lx/%#lx", offset, size);
+		len += printk(buffer + len, "+%#lx/%#lx", offset, size);
 
 	if (modname)
-		len += sprintf(buffer + len, " [%s]", modname);
+		len += printk(buffer + len, " [%s]", modname);
 
 	return len;
 }
