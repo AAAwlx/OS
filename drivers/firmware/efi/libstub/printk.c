@@ -1,7 +1,7 @@
-#include <linux/printk.h>
-#include <linux/efi.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
+#include <AOS/printk.h>
+#include <AOS/efi.h>
+#include <AOS/types.h>
+#include <AOS/kernel.h>
 
 #include "efistub.h"
 

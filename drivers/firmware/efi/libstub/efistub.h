@@ -2,7 +2,7 @@
 #define _DRIVER_FIRMWARE_EFI_EFISTUB_H
 
 #include <AOS/efi.h>
-#include <linux/types.h>
+#include <AOS/types.h>
 #include <AOS/compiler_attributes.h>
 #include <AOS/kern_level.h>
 

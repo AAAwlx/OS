@@ -110,11 +110,11 @@ KBUILD_AFLAGS += $(mflags-y)
 ###
 # Kernel objects
 
-head-y := arch/x86/kernel/head_$(BITS).o
+head-y := arch/x86/kernel/head_64.o
 
 # See arch/x86/Kbuild for content of core part of the kernel
 core-y += arch/x86/kernel/
-core-y += arch/x86/lib/
+
 
 # drivers-y are linked after core-y
 #drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/
@@ -138,7 +138,7 @@ BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage
 PHONY += bzImage $(BOOT_TARGETS)
 
 # Default kernel to build
-all: bzImage
+all: $(KBUILD_IMAGE) $(KBUILD_DTBS)
 
 # KBUILD_IMAGE specify target image being built
 KBUILD_IMAGE := $(boot)/bzImage

@@ -1,7 +1,7 @@
 #include <AOS/string.h>
 #include <AOS/printk.h>
 #include <AOS/stdio.h>
-#include <debug.h>
+#include <AOS/debug.h>
 void memset(void* dst_, uint8_t value, uint32_t size) {
 	
 	uint8_t* dst = (uint8_t*)dst_;

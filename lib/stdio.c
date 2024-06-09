@@ -4,7 +4,7 @@
 #include <AOS/types.h>
 #include <AOS/kernel.h>
 #include <asm/stdio.h>
-
+#include <asm/print.h>
 int printk(const char *fmt, ...)
 {
 	char printf_buf[256];

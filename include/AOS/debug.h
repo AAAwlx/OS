@@ -12,4 +12,12 @@ extern void panic_spin(char* filename, int line, const char* func);
 
 #define BUG() PANIC()
 
+#ifdef NDEBUG
+    #define ASSERT(CONDITION) ((void)0)
+#else
+    #define ASSERT(CONDITION) if(CONDITION){} \
+                              else BUG()
+#endif
+
+
 #endif /*_LINUX_DEBUG_H*/

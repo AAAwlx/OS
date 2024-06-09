@@ -1,7 +1,7 @@
 #ifndef _UAPI_SCREEN_INFO_H
 #define _UAPI_SCREEN_INFO_H
 
-#include <linux/types.h>
+#include <AOS/types.h>
 
 /*
  * These are set up by the setup-routine at boot-time:

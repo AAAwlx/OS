@@ -1,4 +1,4 @@
-#include <linux/efi.h>
+#include <AOS/efi.h>
 #include <asm/efi.h>
 
 #include "efistub.h"
@@ -6,7 +6,7 @@
 #define EFI_RT_VIRTUAL_BASE	SZ_512M
 
 static u64 virtmap_base = EFI_RT_VIRTUAL_BASE;
-static bool flat_va_mapping = (EFI_RT_VIRTUAL_OFFSET != 0);
+//static bool flat_va_mapping = (EFI_RT_VIRTUAL_OFFSET != 0);
 
 struct screen_info * __weak alloc_screen_info(void)
 {
@@ -65,7 +65,7 @@ static void install_memreserve_table(void)
 
 	rsv->next = 0;
 	rsv->size = 0;
-	atomic_set(&rsv->count, 0);
+	//atomic_set(&rsv->count, 0);
 
 	status = efi_bs_call(install_configuration_table,
 			     &memreserve_table_guid, rsv);

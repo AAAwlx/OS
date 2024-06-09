@@ -1,7 +1,7 @@
 #ifndef _LINUX_RANGE_H
 #define _LINUX_RANGE_H
 
-#include <linux/types.h>
+#include <AOS/types.h>
 
 struct range {
 	u64   start;

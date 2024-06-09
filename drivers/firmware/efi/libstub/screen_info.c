@@ -1,4 +1,4 @@
-#include <linux/efi.h>
+#include <AOS/efi.h>
 #include <asm/efi.h>
 
 #include "efistub.h"
