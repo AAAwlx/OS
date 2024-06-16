@@ -7,7 +7,7 @@ CPPFLAGS_vmlinux.lds := -fmacro-prefix-map=./= -Wall -Wundef -Werror=strict-prot
 
 # Object file lists.
 
-# obj-y := setup.o
+obj-y := setup.o
 
 head-y			:= head_64.o
 extra-y := $(head-y) vmlinux.lds
