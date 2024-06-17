@@ -241,7 +241,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -fno-tree-scev-cprop -Wmissing-declarations -Wmissing-prototypes
+		   -fno-tree-scev-cprop -Wmissing-declarations -Wmissing-prototypes\
+		   -std=gnu89 -fno-pie
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL := -fno-tree-scev-cprop
 KBUILD_AFLAGS   := -D__ASSEMBLY__

@@ -131,7 +131,6 @@ core-y += arch/x86/kernel/
 ####
 # boot loader support. Several targets are kept for legacy purposes
 
-boot := arch/x86/boot
 
 BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage
 
