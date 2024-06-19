@@ -227,7 +227,7 @@ SECTIONS
 	 * output PHDR, so the next output section - .init.text - should
 	 * start another segment - init.
 	 */
-	PERCPU_VADDR(0, :percpu)
+	PERCPU_VADDR(0, :percpu, PHDR)
 #endif
 
 	INIT_TEXT_SECTION(PAGE_SIZE)
