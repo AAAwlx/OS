@@ -2,7 +2,7 @@
 #include <boot/multiboot2.h>
 #include <asm/x86.h>
 #include <asm/page.h>
-
+#include <AOS/init.h>
 #define GRUB_MULTIBOOT_ARCHITECTURE_I386 (0)
 #define MULTIBOOT2_HEADER_LEN (multiboot_header_end - multiboot_header)
 #define MULTIBOOT2_HEADER_CHECKSUM \
@@ -10,7 +10,7 @@
     + GRUB_MULTIBOOT_ARCHITECTURE_I386 \
     + MULTIBOOT2_HEADER_LEN)
 
-.section .boot.header
+__HEAD
     .align 8
 
     multiboot_header:
@@ -42,7 +42,7 @@
         .long   8
     multiboot_header_end:
 
-.section .boot.text32:
+__INIT
     .code32
     .align 0x1000
     .extern boot_main
@@ -130,8 +130,7 @@
         hlt
         jmp .loop
 
-.section .boot.data
-    .section .boot.data:
+.section .boot.data, "aw"
     .align 0x1000
 
     .globl boot_stack, boot_stack_top, boot_pgd, boot_pud
