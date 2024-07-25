@@ -4,6 +4,8 @@
 #include <AOS/linkage.h>
 
 /* L1 cache line size */
+#define CONFIG_X86_L1_CACHE_SHIFT 6
+#define CONFIG_X86_INTERNODE_CACHE_SHIFT 6
 #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
 #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
 

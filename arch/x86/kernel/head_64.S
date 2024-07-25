@@ -24,7 +24,7 @@ __HEAD
         .short MULTIBOOT_HEADER_TAG_ENTRY_ADDRESS
         .short 0
         .long 12
-        .long _start
+        .long startup_64
     
     tag_frame_buffer:
         .align 8
@@ -47,9 +47,9 @@ __INIT
     .align 0x1000
     .extern boot_main
 
-    .globl _start
+    .globl startup_64
 
-    _start:
+    startup_64:
         # turn off the interrupt temporarily,
         # and we should turn it on after our own IDT has been built.
         cli

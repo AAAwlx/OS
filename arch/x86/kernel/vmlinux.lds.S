@@ -1,10 +1,3 @@
-
-#ifdef CONFIG_X86_32
-#define LOAD_OFFSET __PAGE_OFFSET
-#else
-#define LOAD_OFFSET __START_KERNEL_map
-#endif
-
 #include <asm-generic/vmlinux.lds.h>
 #include <asm/asm-offsets.h>
 #include <asm/thread_info.h>
@@ -14,6 +7,9 @@
 #include <asm/boot.h>
 #undef i386     /* in case the preprocessor is a 32bit one */
 
+#define THREAD_ORDER	1
+#define PAGE_SIZE 4096
+#define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT)/*指定输出格式*/
 
 /*根据config选择架构*/
@@ -54,8 +50,8 @@ jiffies_64 = jiffies;
 #endif
 /*设置程序表头*/
 PHDRS {
-	text PT_LOAD FLAGS(5);          /* R_E *设置text段可读可执行/
-	data PT_LOAD FLAGS(7);          /* RWE */
+	text PT_LOAD FLAGS(5);          /*RX*/
+	data PT_LOAD FLAGS(6);          /* RWE */
 #ifdef CONFIG_X86_64
 	user PT_LOAD FLAGS(5);          /* R_E */
 #ifdef CONFIG_SMP
@@ -63,7 +59,7 @@ PHDRS {
 #endif
 	init PT_LOAD FLAGS(7);          /* RWE */
 #endif
-	note PT_NOTE FLAGS(0);          /* ___ */
+	note PT_NOTE FLAGS(4);          /* ___ */
 }
 
 SECTIONS
@@ -72,7 +68,7 @@ SECTIONS
         . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
         phys_startup_32 = startup_32 - LOAD_OFFSET;
 #else
-        . = __START_KERNEL;
+        . = (0xffffffff80000000)+((0x1000000 + (0x1000000 - 1)) & ~(0x1000000 - 1));
         phys_startup_64 = startup_64 - LOAD_OFFSET;
 #endif
 
@@ -167,14 +163,6 @@ SECTIONS
 	}
 	vsyscall_clock = VVIRT(.vsyscall_clock);
 
-
-	.vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1)) {
-		*(.vsyscall_1)
-	}
-	.vsyscall_2 ADDR(.vsyscall_0) + 2048: AT(VLOAD(.vsyscall_2)) {
-		*(.vsyscall_2)
-	}
-
 	.vgetcpu_mode : AT(VLOAD(.vgetcpu_mode)) {
 		*(.vgetcpu_mode)
 	}
@@ -185,10 +173,6 @@ SECTIONS
 		*(.jiffies)
 	}
 	jiffies = VVIRT(.jiffies);
-
-	.vsyscall_3 ADDR(.vsyscall_0) + 3072: AT(VLOAD(.vsyscall_3)) {
-		*(.vsyscall_3)
-	}
 
 	. = __vsyscall_0 + PAGE_SIZE;
 
@@ -212,13 +196,15 @@ SECTIONS
 	 * output PHDR, so the next output section - .init.text - should
 	 * start another segment - init.
 	 */
-	PERCPU_VADDR(0, :percpu, PHDR)
+	PERCPU_VADDR(0, 0, :percpu)
 #endif
 
 	INIT_TEXT_SECTION(PAGE_SIZE)
 #ifdef CONFIG_X86_64
 	:init
 #endif
+
+#define CONFIG_X86_L1_CACHE_SHIFT 6
 
 	INIT_DATA_SECTION(16)
 
@@ -328,8 +314,7 @@ SECTIONS
  * for the boot processor.
  */
 #define INIT_PER_CPU(x) init_per_cpu__##x = x + __per_cpu_load
-INIT_PER_CPU(gdt_page);
-INIT_PER_CPU(irq_stack_union);
+
 
 /*
  * Build-time check on the image size:
@@ -337,10 +322,6 @@ INIT_PER_CPU(irq_stack_union);
 . = ASSERT((_end - _text <= KERNEL_IMAGE_SIZE),
 	   "kernel image bigger than KERNEL_IMAGE_SIZE");
 
-#ifdef CONFIG_SMP
-. = ASSERT((irq_stack_union == 0),
-           "irq_stack_union is not at start of per-cpu area");
-#endif
 
 #endif /* CONFIG_X86_32 */
 
