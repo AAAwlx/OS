@@ -8,7 +8,8 @@ endif
 
 # obj-y	= cpu.o smp.o printk.o panic.o \
 # 	workqueue.o signal.o syscall.o
+ccflags-y := -std=gnu99 -Wno-declaration-after-statement
 
 obj-$(CONFIG_KALLSYMS)	+= kallsyms.o
+obj-y += debug.o
 
-# obj-y	+= sched/ sh_kapi/ irq/ time/ locking/ count/

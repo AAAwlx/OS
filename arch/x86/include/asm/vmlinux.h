@@ -23,7 +23,7 @@
 #include <asm-generic/vmlinux.lds.h>
 #include <asm/asm-offsets.h>
 #include <asm/thread_info.h>
-#include <asm/page_type.h>
+#include <asm/page_types.h>
 #include <asm/cache.h>
 #include <asm/boot.h>
 
@@ -226,7 +226,7 @@ SECTIONS
 	 * output PHDR, so the next output section - .init.text - should
 	 * start another segment - init.
 	 */
-	PERCPU_VADDR(0, :percpu)
+	PERCPU_VADDR(0,0, :percpu)
 #endif
 
 	INIT_TEXT_SECTION(PAGE_SIZE)
@@ -358,10 +358,4 @@ INIT_PER_CPU(irq_stack_union);
 
 #endif /* CONFIG_X86_32 */
 
-#ifdef CONFIG_KEXEC
-#include <asm/kexec.h>
-
-. = ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
-           "kexec control code size is too big");
-#endif
 

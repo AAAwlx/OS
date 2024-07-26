@@ -12,30 +12,11 @@
 #define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT)/*指定输出格式*/
 
-/*根据config选择架构*/
-#ifdef CONFIG_X86_32
-OUTPUT_ARCH(i386)
-ENTRY(phys_startup_32)
-jiffies = jiffies_64;
-#else
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(phys_startup_64)
-jiffies_64 = jiffies;
-#endif
+ENTRY(startup_64)
 
 #if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-/*
- * On 64-bit, align RODATA to 2MB so that even with CONFIG_DEBUG_RODATA
- * we retain large page mappings for boundaries spanning kernel text, rodata
- * and data sections.
- *
- * However, kernel identity mappings will have different RWX permissions
- * to the pages mapping to text and to the pages padding (which are freed) the
- * text section. Hence kernel identity mappings will be broken to smaller
- * pages. For 64-bit, kernel text and kernel identity mappings are different,
- * so we can enable protection checks that come with CONFIG_DEBUG_RODATA,
- * as well as retain 2MB large page mappings for kernel text.
- */
+
 #define X64_ALIGN_DEBUG_RODATA_BEGIN	. = ALIGN(HPAGE_SIZE);
 
 #define X64_ALIGN_DEBUG_RODATA_END				\
@@ -52,35 +33,59 @@ jiffies_64 = jiffies;
 PHDRS {
 	text PT_LOAD FLAGS(5);          /*RX*/
 	data PT_LOAD FLAGS(6);          /* RWE */
-#ifdef CONFIG_X86_64
 	user PT_LOAD FLAGS(5);          /* R_E */
-#ifdef CONFIG_SMP
-	percpu PT_LOAD FLAGS(6);        /* RW_ */
-#endif
 	init PT_LOAD FLAGS(7);          /* RWE */
-#endif
 	note PT_NOTE FLAGS(4);          /* ___ */
 }
 
 SECTIONS
 {
-#ifdef CONFIG_X86_32
-        . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
-        phys_startup_32 = startup_32 - LOAD_OFFSET;
-#else
-        . = (0xffffffff80000000)+((0x1000000 + (0x1000000 - 1)) & ~(0x1000000 - 1));
-        phys_startup_64 = startup_64 - LOAD_OFFSET;
-#endif
+	. = 1M;
+	__boot_start = .;
 
-	/* Text and read-only data */
+	/* ASM boot-state kernel */
+
+    .boot.loader :
+	{
+		KEEP(*(.boot.header))
+		*(.boot.*)
+		arch/x86/kernel/head_64.o
+	}
+
+	. = ALIGN(4096);
+
+	/* C boot-state kernel */
+
+	.boot.text ALIGN(4096) :
+	{
+		arch/x86/kernel/head_64.o(.text)
+	}
+
+	. = ALIGN(4096);
+
+	.boot.rodata ALIGN(4096) :
+	{
+		arch/x86/kernel/head_64.o(.rodata)
+	}
+
+	. = ALIGN(4096);
+
+	.boot.data ALIGN(4096) :
+	{
+		arch/x86/kernel/head_64.o(.data)
+		arch/x86/kernel/head_64.o(.*)
+	}
+
+	. = ALIGN(4096);
+
+	__boot_end = .;
+
+    . = (0xffffffff80000000)+((0x1000000 + (0x1000000 - 1)) & ~(0x1000000 - 1));
+        phys_startup_64 = startup_64 - LOAD_OFFSET;
+
 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
 		_text = .;
-		/* bootstrapping code */
 		HEAD_TEXT
-#ifdef CONFIG_X86_32
-		. = ALIGN(PAGE_SIZE);
-		*(.text.page_aligned)
-#endif
 		. = ALIGN(8);
 		_stext = .;
 		TEXT_TEXT
@@ -110,11 +115,6 @@ SECTIONS
 		/* init_task */
 		INIT_TASK_DATA(THREAD_SIZE)
 
-#ifdef CONFIG_X86_32
-		/* 32 bit has nosave before _edata */
-		NOSAVE_DATA
-#endif
-
 		PAGE_ALIGNED_DATA(PAGE_SIZE)
 
 		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
@@ -129,77 +129,12 @@ SECTIONS
 		_edata = .;
 	} :data
 
-#ifdef CONFIG_X86_64
-
-#define VSYSCALL_ADDR (-10*1024*1024)
-
-#define VLOAD_OFFSET (VSYSCALL_ADDR - __vsyscall_0 + LOAD_OFFSET)
-#define VLOAD(x) (ADDR(x) - VLOAD_OFFSET)
-
-#define VVIRT_OFFSET (VSYSCALL_ADDR - __vsyscall_0)
-#define VVIRT(x) (ADDR(x) - VVIRT_OFFSET)
-
-	. = ALIGN(4096);
-	__vsyscall_0 = .;
-
-	. = VSYSCALL_ADDR;
-	.vsyscall_0 : AT(VLOAD(.vsyscall_0)) {
-		*(.vsyscall_0)
-	} :user
-
-	. = ALIGN(L1_CACHE_BYTES);
-	.vsyscall_fn : AT(VLOAD(.vsyscall_fn)) {
-		*(.vsyscall_fn)
-	}
-
-	. = ALIGN(L1_CACHE_BYTES);
-	.vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data)) {
-		*(.vsyscall_gtod_data)
-	}
-
-	vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
-	.vsyscall_clock : AT(VLOAD(.vsyscall_clock)) {
-		*(.vsyscall_clock)
-	}
-	vsyscall_clock = VVIRT(.vsyscall_clock);
-
-	.vgetcpu_mode : AT(VLOAD(.vgetcpu_mode)) {
-		*(.vgetcpu_mode)
-	}
-	vgetcpu_mode = VVIRT(.vgetcpu_mode);
-
-	. = ALIGN(L1_CACHE_BYTES);
-	.jiffies : AT(VLOAD(.jiffies)) {
-		*(.jiffies)
-	}
-	jiffies = VVIRT(.jiffies);
-
-	. = __vsyscall_0 + PAGE_SIZE;
-
-#undef VSYSCALL_ADDR
-#undef VLOAD_OFFSET
-#undef VLOAD
-#undef VVIRT_OFFSET
-#undef VVIRT
-
-#endif /* CONFIG_X86_64 */
-
 	/* Init code and data - will be freed after init */
 	. = ALIGN(PAGE_SIZE);
 	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {
 		__init_begin = .; /* paired with __init_end */
 	}
 
-#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
-	/*
-	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
-	 * output PHDR, so the next output section - .init.text - should
-	 * start another segment - init.
-	 */
-	PERCPU_VADDR(0, 0, :percpu)
-#endif
-
-	INIT_TEXT_SECTION(PAGE_SIZE)
 #ifdef CONFIG_X86_64
 	:init
 #endif
@@ -219,17 +154,6 @@ SECTIONS
 		__parainstructions = .;
 		*(.parainstructions)
 		__parainstructions_end = .;
-	}
-
-	. = ALIGN(8);
-	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
-		__alt_instructions = .;
-		*(.altinstructions)
-		__alt_instructions_end = .;
-	}
-
-	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
-		*(.altinstr_replacement)
 	}
 
 	/*
@@ -293,37 +217,8 @@ SECTIONS
 
 	_end = .;
 
-        STABS_DEBUG
-        DWARF_DEBUG
-
-	/* Sections to be discarded */
-	DISCARDS
-	/DISCARD/ : { *(.eh_frame) }
 }
 
-
-#ifdef CONFIG_X86_32
-/*
- * The ASSERT() sink to . is intentional, for binutils 2.14 compatibility:
- */
-. = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
-	   "kernel image bigger than KERNEL_IMAGE_SIZE");
-#else
-/*
- * Per-cpu symbols which need to be offset from __per_cpu_load
- * for the boot processor.
- */
-#define INIT_PER_CPU(x) init_per_cpu__##x = x + __per_cpu_load
-
-
-/*
- * Build-time check on the image size:
- */
-. = ASSERT((_end - _text <= KERNEL_IMAGE_SIZE),
-	   "kernel image bigger than KERNEL_IMAGE_SIZE");
-
-
-#endif /* CONFIG_X86_32 */
 
 
 

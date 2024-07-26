@@ -10,6 +10,9 @@
 #define all_var 0
 #endif
 
+char kernel_text_start[];
+char kernel_text_end[];
+
 /*
  * These will be re-linked against their real values
  * during the second link stage.

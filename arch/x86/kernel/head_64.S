@@ -123,7 +123,7 @@ __INIT
         mov     %ax, %gs
 
         # enter the 64-bit world within a long jmp
-        jmp $(1 << SELECTOR_INDEX), $main
+        jmp $(1 << SELECTOR_INDEX), $start_kernel
 
         # we shouldn't get here...
     .loop:
