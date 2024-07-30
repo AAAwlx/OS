@@ -45,7 +45,7 @@ __HEAD
 __INIT
     .code32
     .align 0x1000
-    .extern boot_main
+    .extern start_kernel
 
     .globl startup_64
 
@@ -61,7 +61,7 @@ __INIT
         # temporary stack
         mov     $boot_stack_top, %esp
 
-        # set the boot information as parameters for boot_main()
+        # set the boot information as parameters for start_kernel()
         mov     %eax, %edi
         mov     %ebx, %esi
 

@@ -6,11 +6,11 @@
 #include <asm/stdio.h>
 #include <AOS/smp.h>
 #include <AOS/irqflags.h>
-extern void __init __no_sanitize_address start_kernel(void);
+extern void start_kernel(void);
 
 bool early_boot_irqs_disabled;
 
-void __init __no_sanitize_address start_kernel(void)
+void start_kernel(void)
 {
 	char str[] = "AAAOS";
 	int cpu = smp_processor_id();
